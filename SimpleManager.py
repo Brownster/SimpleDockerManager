@@ -86,6 +86,44 @@ def update_lidarr():
     downloads_path = app.downloads_path_entry.get()
     # Reinstall Lidarr with the updated image and existing parameters
     install_lidarr(puid, pgid, timezone, config_path, music_path, downloads_path)
+    
+############################################# INSTALL SABNZBD #############################################
+    
+def install_sabnzbd(puid, pgid, timezone, config_path, downloads_path, incomplete_downloads_path):
+    subprocess.run(["docker", "pull", "lscr.io/linuxserver/sabnzbd:latest"])
+    subprocess.run([
+        "docker", "run", "-d",
+        "--name=sabnzbd",
+        f"-e PUID={puid}",
+        f"-e PGID={pgid}",
+        f"-e TZ={timezone}",
+        "-p 8080:8080",
+        f"-v {config_path}:/config",
+        f"-v {downloads_path}:/downloads",
+        f"-v {incomplete_downloads_path}:/incomplete-downloads",
+        "--restart", "unless-stopped",
+        "lscr.io/linuxserver/sabnzbd:latest"
+    ])
+
+def start_sabnzbd():
+    subprocess.run(["docker", "start", "sabnzbd"])
+
+def stop_sabnzbd():
+    subprocess.run(["docker", "stop", "sabnzbd"])
+
+def delete_sabnzbd():
+    subprocess.run(["docker", "rm", "sabnzbd"])
+
+def update_sabnzbd():
+    stop_sabnzbd()
+    delete_sabnzbd()
+    puid = app.puid_entry.get()
+    pgid = app.pgid_entry.get()
+    timezone = app.timezone_entry.get()
+    config_path = app.config_path_entry.get()
+    downloads_path = app.downloads_path_entry.get()
+    incomplete_downloads_path = app.incomplete_downloads_path_entry.get()
+    install_sabnzbd(puid, pgid, timezone, config_path, downloads_path, incomplete_downloads_path)
 
 ########################################### INSTALL SELECTED #####################
 def install_selected(self):
@@ -111,7 +149,7 @@ def install_selected(self):
 
 
 
-
+######################################### APPLICATION CLASS ##########################################
 
 class Application(ttk.Frame):
     def __init__(self, master=None):
@@ -120,6 +158,8 @@ class Application(ttk.Frame):
         self.pack()
         self.create_widgets()
 
+########################################## CREATE WIDGETS #########################################        
+        
     def create_widgets(self):
         self.notebook = ttk.Notebook(self)
         self.notebook.pack()
@@ -128,11 +168,14 @@ class Application(ttk.Frame):
         self.general_frame = ttk.Frame(self.notebook)
         self.medusa_frame = ttk.Frame(self.notebook)
         self.lidarr_frame = ttk.Frame(self.notebook)
+        self.sabnzbd_frame = ttk.Frame(self.notebook)
+
 
         # Add the frames as tabs to the notebook
         self.notebook.add(self.general_frame, text="General")
         self.notebook.add(self.medusa_frame, text="Medusa")
         self.notebook.add(self.lidarr_frame, text="Lidarr")
+        self.notebook.add(self.sabnzbd_frame, text="SABnzbd")
 
         # General settings (checkboxes)
         self.install_medusa_var = tk.BooleanVar()
@@ -157,6 +200,11 @@ class Application(ttk.Frame):
         self.lidarr_label = ttk.Label(self.lidarr_frame, text="Lidarr Settings")
         self.lidarr_label.pack()
         # ... (other Lidarr widgets)
+
+        
+        self.install_sabnzbd_var = tk.BooleanVar()
+        self.install_sabnzbd_checkbox = ttk.Checkbutton(self.general_frame, text="Install SABnzbd", variable=self.install_sabnzbd_var)
+        self.install_sabnzbd_checkbox.pack()
 
     def install_selected(self):
         if self.install_medusa_var.get():
