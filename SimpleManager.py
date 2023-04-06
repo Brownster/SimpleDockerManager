@@ -258,12 +258,16 @@ class Application(ttk.Frame):
         # General settings (checkboxes)
         self.install_medusa_var = tk.BooleanVar()
         self.install_lidarr_var = tk.BooleanVar()
+        self.install_sabnzbd_var = tk.BooleanVar()
 
         self.install_medusa_checkbox = ttk.Checkbutton(self.general_frame, text="Install Medusa", variable=self.install_medusa_var)
         self.install_medusa_checkbox.pack()
 
         self.install_lidarr_checkbox = ttk.Checkbutton(self.general_frame, text="Install Lidarr", variable=self.install_lidarr_var)
         self.install_lidarr_checkbox.pack()
+
+        self.install_sabnzbd_checkbox = ttk.Checkbutton(self.general_frame, text="Install SABnzbd", variable=self.install_sabnzbd_var)
+        self.install_sabnzbd_checkbox.pack()
 
         # Button to run the selected installations
         self.install_selected_button = ttk.Button(self.general_frame, text="Install Selected", command=self.install_selected)
