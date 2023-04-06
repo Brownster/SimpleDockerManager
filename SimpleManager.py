@@ -86,11 +86,15 @@ def update_lidarr():
     downloads_path = app.downloads_path_entry.get()
     # Reinstall Lidarr with the updated image and existing parameters
     install_lidarr(puid, pgid, timezone, config_path, music_path, downloads_path)
+
     
-############################################# INSTALL SABNZBD #############################################
-    
+ ################################################### install sabnzbd   ########################################
+
 def install_sabnzbd(puid, pgid, timezone, config_path, downloads_path, incomplete_downloads_path):
+    # Pull the latest SABnzbd Docker image
     subprocess.run(["docker", "pull", "lscr.io/linuxserver/sabnzbd:latest"])
+
+    # Run a new SABnzbd container with the specified parameters
     subprocess.run([
         "docker", "run", "-d",
         "--name=sabnzbd",
@@ -117,14 +121,19 @@ def delete_sabnzbd():
 def update_sabnzbd():
     stop_sabnzbd()
     delete_sabnzbd()
+    # Retrieve the existing parameters from the GUI
     puid = app.puid_entry.get()
     pgid = app.pgid_entry.get()
     timezone = app.timezone_entry.get()
     config_path = app.config_path_entry.get()
     downloads_path = app.downloads_path_entry.get()
     incomplete_downloads_path = app.incomplete_downloads_path_entry.get()
+    # Reinstall SABnzbd with the updated image and existing parameters
     install_sabnzbd(puid, pgid, timezone, config_path, downloads_path, incomplete_downloads_path)
 
+    
+    
+ 
 ########################################### INSTALL SELECTED #####################
 def install_selected(self):
     if self.install_medusa_var.get():
@@ -145,6 +154,75 @@ def install_selected(self):
             self.music_path_entry.get(),
             self.downloads_path_entry.get()
         )
+
+
+######################################### APPLICATION CLASS ##########################################
+
+class Application(ttk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.pack()
+        self.create_widgets()
+
+########################################## CREATE WIDGETS #########################################        
+        
+    def create_widgets(self):
+        # ... (Other widgets creation)
+
+        # Medusa settings
+        self.medusa_label = ttk.Label(self.medusa_frame, text="Medusa Settings")
+        self.medusa_label.pack()
+        
+        # Add missing Medusa widgets
+        self.medusa_config_path_entry = ttk.Entry(self.medusa_frame)
+        self.medusa_config_path_entry.pack()
+        self.medusa_tv_path_entry = ttk.Entry(self.medusa_frame)
+        self.medusa_tv_path_entry.pack()
+        self.medusa_downloads_path_entry = ttk.Entry(self.medusa_frame)
+        self.medusa_downloads_path_entry.pack()
+
+        # Lidarr settings
+        self.lidarr_label = ttk.Label(self.lidarr_frame, text="Lidarr Settings")
+        self.lidarr_label.pack()
+        
+        # Add missing Lidarr widgets
+        self.config_path_entry = ttk.Entry(self.lidarr_frame)
+        self.config_path_entry.pack()
+        self.music_path_entry = ttk.Entry(self.lidarr_frame)
+        self.music_path_entry.pack()
+        self.downloads_path_entry = ttk.Entry(self.lidarr_frame)
+        self.downloads_path_entry.pack()
+
+    def install_selected(self):
+        if self.install_medusa_var.get():
+            install_medusa(
+                self.puid_entry.get(),
+                self.pgid_entry.get(),
+                self.timezone_entry.get(),
+                self.medusa_config_path_entry.get(),
+                self.medusa_tv_path_entry.get(),
+                self.medusa_downloads_path_entry.get()
+            )
+        if self.install_lidarr_var.get():
+            install_lidarr(
+                self.puid_entry.get(),
+                self.pgid_entry.get(),
+                self.timezone_entry.get(),
+                self.config_path_entry.get(),
+                self.music_path_entry.get(),
+                self.downloads_path_entry.get()
+            )
+        if self.install_sabnzbd_var.get():
+            install_sabnzbd(
+                self.puid_entry.get(),
+                self.pgid_entry.get(),
+                self.timezone_entry.get(),
+                self.config_path_entry.get(),
+                self.downloads_path_entry.get(),
+                self.incomplete_downloads_path_entry.get()
+            )
+
 
 
 
@@ -194,26 +272,64 @@ class Application(ttk.Frame):
         # Medusa settings
         self.medusa_label = ttk.Label(self.medusa_frame, text="Medusa Settings")
         self.medusa_label.pack()
-        # ... (other Medusa widgets)
+        self.medusa_config_path_entry = ttk.Entry(self.medusa_frame)
+        self.medusa_config_path_entry.pack()
+        self.medusa_tv_path_entry = ttk.Entry(self.medusa_frame)
+        self.medusa_tv_path_entry.pack()
+        self.medusa_downloads_path_entry = ttk.Entry(self.medusa_frame)
+        self.medusa_downloads_path_entry.pack()
 
         # Lidarr settings
         self.lidarr_label = ttk.Label(self.lidarr_frame, text="Lidarr Settings")
         self.lidarr_label.pack()
-        # ... (other Lidarr widgets)
+        self.config_path_entry = ttk.Entry(self.lidarr_frame)
+        self.config_path_entry.pack()
+        self.music_path_entry = ttk.Entry(self.lidarr_frame)
+        self.music_path_entry.pack()
+        self.downloads_path_entry = ttk.Entry(self.lidarr_frame)
+        self.downloads_path_entry.pack()
 
-        
+        # SABnzbd settings
+        self.sabnzbd_label = ttk.Label(self.sabnzbd_frame, text="SABnzbd Settings")
+        self.sabnzbd_label.pack()        
         self.install_sabnzbd_var = tk.BooleanVar()
         self.install_sabnzbd_checkbox = ttk.Checkbutton(self.general_frame, text="Install SABnzbd", variable=self.install_sabnzbd_var)
         self.install_sabnzbd_checkbox.pack()
+        self.config_path_entry = ttk.Entry(self.sabnzbd_frame)
+        self.config_path_entry.pack()
+        self.downloads_path_entry = ttk.Entry(self.sabnzbd_frame)
+        self.downloads_path_entry.pack()
+        self.incomplete_downloads_path_entry = ttk.Entry(self.sabnzbd_frame)
+        self.incomplete_downloads_path_entry.pack()
 
     def install_selected(self):
         if self.install_medusa_var.get():
-            # Call the install_medusa function with the required parameters
-            pass
-
+            install_medusa(
+                self.puid_entry.get(),
+                self.pgid_entry.get(),
+                self.timezone_entry.get(),
+                self.medusa_config_path_entry.get(),
+                self.medusa_tv_path_entry.get(),
+                self.medusa_downloads_path_entry.get()
+            )
         if self.install_lidarr_var.get():
-            # Call the install_lidarr function with the required parameters
-            pass
+            install_lidarr(
+                self.puid_entry.get(),
+                self.pgid_entry.get(),
+                self.timezone_entry.get(),
+                self.config_path_entry.get(),
+                self.music_path_entry.get(),
+                self.downloads_path_entry.get()
+            )
+        if self.install_sabnzbd_var.get():
+            install_sabnzbd(
+                self.puid_entry.get(),
+                self.pgid_entry.get(),
+                self.timezone_entry.get(),
+                self.config_path_entry.get(),
+                self.downloads_path_entry.get(),
+                self.incomplete_downloads_path_entry.get()
+            )
 
 root = tk.Tk()
 root.title("Media Installer")
